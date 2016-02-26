@@ -1,0 +1,312 @@
+div.calendar {
+  width: 100%;
+  min-height: 930px;
+  float: none;
+}
+
+.page_conteiner:after {
+  display: block;
+  clear: both;
+  content: "";
+}
+
+.page_conteiner form .form-item {
+  display: block;
+  clear: both;
+  padding: 10px 0;
+}
+
+.page_conteiner form .form-item label {
+  width: 150px;
+  display: block;
+  float: left;
+  padding: 2px;
+}
+
+.page_conteiner form .form-item select {
+  display: block;
+  float: left;
+  padding: 2px;
+  border: 1px solid #ccc;
+}
+
+.page_conteiner form .form-item select:hover {
+  border-color: #000;
+}
+
+.datepick-month {
+  padding: 10px;
+  width: 220px;
+}
+
+.datepick-month.first {
+  padding-left: 0;
+}
+
+.datepick-month.last {
+  padding-right: 0;
+}
+
+.datepick-month-header {
+  color: #333;
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 0;
+  font-weight: bold;
+}
+
+.datepick-month table th > span {
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: normal;
+}
+
+.page_conteiner .legend:after {
+  display: block;
+  content: "";
+  clear: both;
+}
+
+.page_conteiner .legend > div {
+  float: left;
+  margin-right: 23px;
+  line-height: 26px;
+}
+
+.page_conteiner .legend > div span {
+  display: block;
+  float: left;
+  width: 26px;
+  height: 26px;
+  margin-right: 4px;
+  border-radius: 26px;
+}
+
+.page_conteiner .legend > div.available span {
+  background: #00b050;
+}
+
+.page_conteiner .legend > div.occupied span {
+  background: #ff0000;
+}
+
+.page_conteiner .legend > div.places_left span {
+  background: #f2c700;
+}
+
+.page_conteiner .legend label {
+  display: block;
+  float: left;
+  margin-right: 23px;
+  line-height: 26px;
+  text-transform: uppercase;
+  font-family: 'bmw_type_globalbold';
+}
+
+.page_conteiner .block-title {
+  text-transform: uppercase;
+  font-size: 50px;
+  padding-top: 10px;
+  line-height: 50px;
+  color: #333;
+}
+
+.datepick-month td.other-month {
+  border: 0;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  color: #000;
+  font-size: 12px;
+  font-family: 'bmw_type_globalbold';
+}
+
+.tooltip div {
+  border: 1px solid #333;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  color: #000;
+  font-size: 12px;
+  font-family: 'bmw_type_globalbold';
+  margin-bottom: 5px;
+}
+
+.tooltip div span.id {
+  display: none;
+}
+
+/*.tooltip.active > div > span{*/
+/*display: block;*/
+/*float: left;*/
+/*width: 11px;*/
+/*height: 11px;*/
+/*margin-right: 4px;*/
+/*border-radius: 26px;*/
+/*}*/
+.tooltip.active > div > span.red,
+.tooltip_onclick > div > span.red,
+.tooltip_onclick > a > span.red {
+  background: #ff0000;
+  display: block;
+  float: left;
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  border-radius: 11px;
+  margin-top: 3px;
+}
+
+.tooltip.active > div > span.green,
+.tooltip_onclick > div > span.green,
+.tooltip_onclick > a > span.green {
+  background: #00b050;
+  display: block;
+  float: left;
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  border-radius: 11px;
+  margin-top: 3px;
+}
+
+.tooltip.active > div > span.places_left,
+.tooltip_onclick > div > span.places_left,
+.tooltip_onclick > a > span.places_left {
+  background: #f2c700;
+  display: block;
+  float: left;
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  border-radius: 11px;
+  margin-top: 3px;
+}
+
+.tooltip.nonactive div {
+  border-color: #878787;
+  background-color: #f1f1f1;
+  color: #878787;
+}
+
+.datepick {
+  margin-top: 0;
+}
+
+.calendar {
+  margin-top: 25px;
+}
+
+.tooltip_onclick {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  width: 200px;
+  margin-left: -100px;
+  & > span{
+    background: url("/sites/all/themes/driver/images/close.png") no-repeat 50% 50%;
+    display: block;
+    width: 13px;
+    height: 13px;
+    position: absolute;
+    top: -17px;
+    right: -16px;
+    cursor: pointer;
+  }
+}
+
+.tooltip_onclick .title {
+  font-family: 'bmw_type_globalbold';
+  letter-spacing: -1px;
+  font-size: 14px;
+}
+
+.tooltip_onclick a .id {
+  display: none;
+}
+
+.tooltip_onclick div, .tooltip_onclick a {
+  border: 1px solid #333;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  color: #000;
+  font-size: 12px;
+  font-family: 'bmw_type_globalbold';
+  margin-bottom: 5px;
+  display: block;
+}
+
+.tooltip_onclick a {
+  text-decoration: underline;
+  font-family: verdana, arial, sans-serif;
+}
+
+.datepick-month-row .datepick-month td a {
+  background: no-repeat 0 100% transparent;
+  &.count-0 {
+
+  }
+  &.count-1 {
+    &.red {
+      background-image: url("../img/calendar_date_red.png");
+    }
+    &.green {
+      background-image: url("../img/calendar_date_green.png");
+    }
+    &.places_left {
+      background-image: url("../img/calendar_date_yelow.png");
+    }
+  }
+  &.count-2 {
+    &.red {
+      background-image: url("../img/calendar_date_red.png");
+      &.green {
+        background-image: url("../img/calendar_date_green_red.png");
+        cursor: pointer;
+      }
+      &.places_left {
+        background-image: url("../img/calendar_date_yelow_red.png");
+        cursor: pointer;
+      }
+    }
+    &.green {
+      background-image: url("../img/calendar_date_green.png");
+      &.places_left {
+        background-image: url("../img/calendar_date_green_yelow.png");
+      }
+    }
+    &.places_left {
+      background-image: url("../img/calendar_date_yelow.png");
+    }
+  }
+  &.count-3, &.count-4, &.count-5, &.count-6, &.count-7, &.count-8, &.count-9, &.count-10, &.count-11, &.count-12, &.count-13, &.count-14, &.count-15, {
+    &.red {
+      background-image: url("../img/calendar_date_red.png");
+      &.green {
+        background-image: url("../img/calendar_date_green_red.png");
+        cursor: pointer;
+        &.places_left {
+          background-image: url("../img/calendar_date_all.png");
+        }
+      }
+      &.places_left {
+        background-image: url("../img/calendar_date_yelow_red.png");
+        cursor: pointer;
+      }
+    }
+    &.green {
+      background-image: url("../img/calendar_date_green.png");
+      &.places_left {
+        background-image: url("../img/calendar_date_green_yelow.png");
+      }
+    }
+    &.places_left {
+      background-image: url("../img/calendar_date_yelow.png");
+    }
+  }
+}

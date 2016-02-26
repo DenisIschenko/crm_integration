@@ -1,0 +1,504 @@
+<?php
+
+define('CALENDAR_URL', 'booking_calendar');
+
+/**
+ * Implements hook_permission().
+ */
+function custom_calendar_permission() {
+  $permissions['administer date_tour'] = array(
+      'title' => t('Administer dates for tour'),
+  );
+  return $permissions;
+}
+
+/*
+ *
+ * hook_init
+ *
+ * */
+//function custom_calendar_init(){
+//  global $language;
+//
+//  $path_lib = libraries_get_path('datepick');
+//  drupal_add_js($path_lib.'/jquery.datepick.js');
+//  drupal_add_js($path_lib.'/jquery.datepick-'.$language->language.'.js');
+//  drupal_add_css($path_lib.'/jquery.datepick.css');
+//}
+
+/*
+ *
+ * hook_menu
+ *
+ * */
+function custom_calendar_menu() {
+  return array(
+    CALENDAR_URL.'/%' => array(
+        'page callback' => 'booking_calendar_page',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+        'description' => 'Booking',
+        'type' => MENU_CALLBACK,
+    ),
+    'admin/config/'.CALENDAR_URL =>array(
+        'title' => 'Даты доступности туров',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('booking_calendar_list_form'),
+        'access arguments' => array('administer date_tour'),
+        'file' => 'booking_calendar.admin.inc',
+    ),
+    'admin/config/'.CALENDAR_URL.'/edit_inaccessibility/%' =>array(
+        'title' => 'Правка недоступности тура',
+        'page callback' => 'booking_calendar_edit',
+        'page arguments' => array(4,3),
+        'access arguments' => array('administer date_tour'),
+        'file' => 'booking_calendar.admin.inc',
+    ),
+    'admin/config/'.CALENDAR_URL.'/edit_availability/%' =>array(
+        'title' => 'Правка доступности тура',
+        'page callback' => 'booking_calendar_edit',
+        'page arguments' => array(4,3),
+        'access arguments' => array('administer date_tour'),
+        'file' => 'booking_calendar.admin.inc',
+    ),
+    'admin/config/'.CALENDAR_URL.'/edit_places_left/%' =>array(
+        'title' => 'Правка осталось 1-2 места',
+        'page callback' => 'booking_calendar_edit',
+        'page arguments' => array(4,3),
+        'access arguments' => array('administer date_tour'),
+        'file' => 'booking_calendar.admin.inc',
+    ),
+    'calendar' =>array(
+        'title' => 'Calendar',
+        'page callback' => 'calendar_page_all',
+        'access callback' => true,
+        'file' => 'booking_calendar.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function custom_calendar_block_info() {
+  $blocks = array();
+  $blocks['booking_calendar'] = array(
+      'info' => t('booking calendar for node'),
+  );
+  return $blocks;
+}
+/**
+ * Implements hook_block_view().
+ */
+function custom_calendar_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'booking_calendar':
+      $block['subject'] = '';
+      $block['content'] = _block_content();
+      break;
+  }
+  return $block;
+}
+
+function _block_content() {
+  global $language;
+
+  $path_lib = libraries_get_path('datepick');
+  drupal_add_js($path_lib.'/jquery.datepick.js');
+  drupal_add_js($path_lib.'/jquery.datepick-'.$language->language.'.js');
+  drupal_add_css($path_lib.'/jquery.datepick.css');
+
+  $node = arg(1);
+  if($node == '937'){
+    $node = '119';
+  }
+
+  $path_module = drupal_get_path('module', 'custom_calendar');
+  drupal_add_js($path_module.'/js/booking_calendar_node.js');
+  drupal_add_css($path_module.'/css/booking_calendar.css');
+
+  drupal_add_js(
+      array(
+          'booking_calendar' => array(
+              'url' => url(CALENDAR_URL),
+              'nid' => $node
+          )
+      ),
+      'setting'
+  );
+  $label = t('Program dates');
+  $send = t('Send an application');
+  $form_url = ($language->language == 'ru')? '/ru/form/otpravit-zayavku' : '/en/form/send-request';
+  $form_node = ($language->language == 'ru')? 'node-797' : 'node-827';
+  $button = '<a href="'.$form_url.'" class="red-button book dialog" name="'.$form_node.'">'.$send.'</a>';
+  $available = t('available');
+  $occupied = t('occupied');
+  $places_left = t('1-2 places left');
+  $output =
+<<<HTML
+    <div class="calendar calendar{$node}">
+      <div class="h3">{$label}:</div>
+      <div id="calendar{$node}"></div>
+    </div>
+    <div class="legend">
+      <div class="available">
+        <span></span>{$available}
+      </div>
+      <div class="places_left">
+        <span></span>{$places_left}
+      </div>
+      <div class="occupied">
+        <span></span>{$occupied}
+      </div>
+    </div>
+
+      {$button}
+HTML;
+  return $output;
+}
+
+function booking_calendar_page($id) {
+  global $user;
+  global $language;
+  $qqq = array_merge($_GET, $_POST);
+  switch($qqq['type']) {
+    case 'loadCalendar':
+      $time = strtotime(date('Y-m-d'));
+      $time1 = $time - 86400 * 30;
+      $time2 = $time + 86400 * 365;
+
+      $dates['array_date'] = range($time1, $time2-86400, 86400);
+      $dates['array_dateWeek'] = array_map(function($date) {return date('N', $date);},  $dates['array_date']);
+
+      $blocked = _get_block_dates($time1, $time2, $id);
+      $j=0;
+
+        for ($i = $time1; $i <= $time2; $i += 86400) {
+          $some_class = "";
+          if (isset($blocked[$i])) {
+            switch ($blocked[$i]['block']) {
+              case 1: $block = 'green '; break;
+              case 2: $block = 'red '; break;
+              case 3: $block = 'places_left'; break;
+              default: $block = FALSE; break;
+            }
+            if(!isset($json['minDate']) && ($blocked[$i]['block_nids'] == 1 || $blocked[$i]['block_nids'] == 3) && $i > $time){
+              $json['minDate'] = date('d/m/Y',  $i);
+            }
+          }else{
+            $block = FALSE;
+          }
+
+          $json['date'][date('Y/n/j', $i)] = array(
+              'blocked' => $block,
+            'param' => $blocked[$i]['block'],
+              'date' => date('d.m.Y', $i),
+          );
+        }
+      break;
+    case 'loadCalendarTid':
+
+      $time = strtotime(date('Y-m-d'));
+      $time1 = $time - 86400 * 30;
+      $time2 = $time + 86400 * 365;
+
+      $dates['array_date'] = range($time1, $time2-86400, 86400);
+      $dates['array_dateWeek'] = array_map(function($date) {return date('N', $date);},  $dates['array_date']);
+
+      $blocked = _get_block_dates_tid($time1, $time2, $id);
+        for ($i = $time1; $i <= $time2; $i += 86400) {
+          $title = "";
+          $count_nids = 0;
+          if (isset($blocked[$i])) {
+            foreach($blocked[$i]['block'] as $nid => $param){
+              $blocked[$i]['block_nids'] = $param;
+              $count_nids++;
+            }
+            foreach($blocked[$i]['color'] as $nid => $param){
+              $blocked[$i]['color_nids'] .= $param.' ';
+            }
+            foreach($blocked[$i]['title'] as $nid => $param){
+              $blocked[$i]['title_nids'] .= $param;
+            }
+            switch ($blocked[$i]['block_nids']) {
+              case 1: $block = $blocked[$i]['color_nids']; $title = $blocked[$i]['title_nids']; break;
+              default: $block = FALSE; $title = ''; break;
+            }
+            if(!isset($json['minDate']) && ($blocked[$i]['block_nids'] == 1)){
+              $json['minDate'] = date('d/m/Y',  $i);
+            }
+          }else{
+            $block = FALSE;
+          }
+
+          $json['date'][date('Y/n/j', $i)] = array(
+              'blocked' => $block,
+              'title' => $title,
+              'count' => $count_nids,
+              'date' => date('d.m.Y', $i),
+          );
+        }
+      break;
+    case 'saveCalendar':
+      $get = $_POST;
+      $json_status = "ok";
+      $json_data = "";
+
+      if($get['destination'] !== "false"){
+        $destination = $get['destination'];
+      }else{
+        $destination = 'admin/config/date/'.CALENDAR_URL;
+      }
+      $dates_start = $get['dates_start'];
+      $tour_days = $get['tour_days'];
+
+
+      switch($get['param']){
+        case 'edit_availability':
+          $table = 'dates_tours';
+          break;
+        case 'edit_inaccessibility':
+          $table = "dates_tours_inacces";
+          break;
+        case 'edit_places_left':
+          $table = "dates_tours_places_left";
+          break;
+      }
+
+      $node = db_select($table, 'td')
+          ->fields('td')
+          ->condition('td.nid', $id)
+          ->execute()
+          ->fetchObject();
+
+      if($node){
+        db_update($table)
+            ->fields(array('start_dates' => $dates_start, 'tour_days' => $tour_days))
+            ->condition('nid', $id)
+            ->execute();
+        $id_rec = $id;
+      }else{
+        $id_rec = db_insert($table)
+            ->fields(array('nid' => $id, 'start_dates' => $dates_start, 'tour_days' => $tour_days))
+            ->execute();
+      }
+
+      if($id_rec){
+        $json_data = urldecode($destination);
+      }else{
+        $json_status = "error";
+        $json_data = 'can create record '. $id_rec;
+      }
+
+
+
+      $json = array('status' =>$json_status, 'data'=>$json_data);
+      break;
+    case 'adminCalendar':
+      switch($_GET['param']){
+        case 'edit_availability':
+          $node = db_select('dates_tours', 'td')
+              ->fields('td')
+              ->condition('td.nid', $id)
+              ->execute()
+              ->fetchObject();
+          break;
+        case 'edit_inaccessibility':
+          $node = db_select('dates_tours_inacces', 'td')
+              ->fields('td')
+              ->condition('td.nid', $id)
+              ->execute()
+              ->fetchObject();
+          break;
+        case 'edit_places_left':
+          $node = db_select('dates_tours_places_left', 'td')
+              ->fields('td')
+              ->condition('td.nid', $id)
+              ->execute()
+              ->fetchObject();
+          break;
+      }
+      $json = array('status' =>'ok', 'data'=>$node);
+  }
+  if(!isset($json['minDate'])){
+    $json['minDate'] = date('d/m/Y');
+  }
+
+  drupal_json_output($json);
+  exit();
+}
+
+function _get_block_dates($time1, $time2, $id){
+  $node_quotes = array();
+  $node = db_select('dates_tours', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates = explode(',',$node->start_dates);
+  $tour_days = $node->tour_days;
+  foreach($start_dates as $key => $value){
+    $this_time = _to_timestamp($value);
+    $time = $time1;
+      if($this_time>=$time){
+        for ($for_for1 = $this_time; $for_for1 < $this_time+($tour_days*86400); $for_for1 += 86400) {
+          $node_quotes[$for_for1]['block'] = 1;
+        }
+      }
+  }
+
+  $node_bl = db_select('dates_tours_inacces', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates_bl = explode(',',$node_bl->start_dates);
+  $tour_days_bl = $node_bl->tour_days;
+  foreach($start_dates_bl as $key_bl => $value_bl){
+    $this_time_bl = _to_timestamp($value_bl);
+    $time = $time1;
+    if($this_time_bl>=$time){
+      for ($for_for1_bl = $this_time_bl; $for_for1_bl < $this_time_bl+($tour_days_bl*86400); $for_for1_bl += 86400) {
+        $node_quotes[$for_for1_bl]['block'] = 2;
+      }
+    }
+  }
+
+  $node_places = db_select('dates_tours_places_left', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates_places = explode(',',$node_places->start_dates);
+  $tour_days_places = $node_places->tour_days;
+  foreach($start_dates_places as $key_places => $value_places){
+    $this_time_places = _to_timestamp($value_places);
+    $time = $time1;
+    if($this_time_places>=$time){
+      for ($for_for1_places = $this_time_places; $for_for1_places < $this_time_places+($tour_days_places*86400); $for_for1_places += 86400) {
+        $node_quotes[$for_for1_places]['block'] = 3;
+      }
+    }
+  }
+  return $node_quotes;
+}
+
+function _get_block_dates_tid($time1, $time2, $id){
+  global $language;
+  $node_quotes = array();
+  $title = "";
+  $items = array();
+
+  $tid = db_select('node', 'n');
+  $tid->innerJoin('field_data_field_program', 'fp', 'fp.entity_id = n.nid');
+  $tid->fields('fp', array('entity_id'));
+  $tid->fields('n', array('title'));
+  $tid->condition('fp.field_program_tid', $id);
+  $tid->condition('n.language', $language->language);
+  $result = $tid->execute();
+  $nodes = $result->fetchAllAssoc('entity_id');
+  foreach ($nodes as $ids => $node) {
+    $node_quotes = _get_nid_by_tid($node->entity_id, $node_quotes, $id, $node->title, $time1, $time2);
+  }
+
+
+//if($id == '77') {
+//
+//  $event_time[] = _to_timestamp('27/08/2015');
+//  $event_time[] = _to_timestamp('28/08/2015');
+//  $event_time[] = _to_timestamp('29/08/2015');
+//  $event_time[] = _to_timestamp('30/08/2015');
+//  $titleev = 'Enduro Challenge';
+//  $linkev = url('taxonomy/term/22');;
+//
+//  foreach ($event_time as $evtime => $ev_time) {
+//    $node_quotes[$ev_time]['block']['t1'] = 1;
+//    $node_quotes[$ev_time]['color']['t1'] = 'green';
+//    $node_quotes[$ev_time]['title']['t1'] = '<div><span class="green"></span>' . $titleev . '<span class="id">' . $linkev . '</span></div>';
+//  }
+//}
+
+  return $node_quotes;
+}
+
+/**
+ * перевести дату во временную метку
+ * @param type sting типа d/m/Y
+ * @return type string timestamp
+ */
+function _to_timestamp($date) {
+  $date_array = explode('/', $date);
+  $date = mktime(0, 0, 0, $date_array[1], $date_array[0], $date_array[2]);
+  return $date;
+}
+
+function _get_nid_by_tid($id, $node_quotes, $tid, $title, $time1, $time2){
+  $link = url('node/'.$id);
+  $node = db_select('dates_tours', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates = explode(',',$node->start_dates);
+  $tour_days = $node->tour_days;
+  $counter = 0;
+  foreach($start_dates as $key => $value){
+    $this_time = _to_timestamp($value);
+    $counter++;
+    if($this_time>=$time1){
+      for ($for_for1 = $this_time; $for_for1 < $this_time+($tour_days*86400); $for_for1 += 86400) {
+        $node_quotes[$for_for1]['block'][$id] = 1;
+        $node_quotes[$for_for1]['color'][$id] = 'green';
+        $node_quotes[$for_for1]['title'][$id] = '<div><span class="green"></span>'.$title.'<span class="id">'.$link.'</span></div>';
+      }
+    }
+  }
+
+  $node_bl = db_select('dates_tours_inacces', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates_bl = explode(',',$node_bl->start_dates);
+  $tour_days_bl = $node_bl->tour_days;
+  $counter = 0;
+  foreach($start_dates_bl as $key_bl => $value_bl){
+    $this_time_bl = _to_timestamp($value_bl);
+//    $time = strtotime(date('Y-m-d'));
+    if($this_time_bl>=$time1){
+      for ($for_for1_bl = $this_time_bl; $for_for1_bl < $this_time_bl+($tour_days_bl*86400); $for_for1_bl += 86400) {
+        $node_quotes[$for_for1_bl]['block'][$id] = 1;
+        $node_quotes[$for_for1_bl]['color'][$id] = 'red';
+        $node_quotes[$for_for1_bl]['title'][$id] = '<div><span class="red"></span>'.$title.'<span class="id">'.$link.'</span></div>';
+      }
+    }
+  }
+
+  $node_places = db_select('dates_tours_places_left', 'td')
+      ->fields('td')
+      ->condition('td.nid', $id)
+      ->execute()
+      ->fetchObject();
+
+  $start_dates_places = explode(',',$node_places->start_dates);
+  $tour_days_places = $node_places->tour_days;
+  $counter = 0;
+  foreach($start_dates_places as $key_places => $value_places){
+    $this_time_bl = _to_timestamp($value_places);
+//    $time = strtotime(date('Y-m-d'));
+    if($this_time_bl>=$time1){
+      for ($for_for1_places = $this_time_bl; $for_for1_places < $this_time_bl+($tour_days_places*86400); $for_for1_places += 86400) {
+        $node_quotes[$for_for1_places]['block'][$id] = 1;
+        $node_quotes[$for_for1_places]['color'][$id] = 'places_left';
+        $node_quotes[$for_for1_places]['title'][$id] = '<div><span class="places_left"></span>'.$title.'<span class="id">'.$link.'</span></div>';
+      }
+    }
+  }
+  return $node_quotes;
+}

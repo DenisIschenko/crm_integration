@@ -1,0 +1,56 @@
+/* 
+    Document   : custom_encyclopedia
+    Created on : 25.04.2013, 13:51:14
+    Author     : Crazy
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+.letter_big, .letter_big a {
+    font-size: 60px;
+  font-family: 'bmw_type_globalbold';
+  color: #000;
+    text-transform: uppercase;
+    font-weight: normal;    
+}
+.href_to_encyclopedy a {
+    display: block;
+    font-size: 14px;
+    margin: 6px 0;
+}
+.href_to_encyclopedy {
+    margin: 20px 0 35px;
+}
+.enciclopedy_one .one_letter{
+    width: 100%;
+}
+.one_letter {
+    width: 210px;
+    margin:  0 10px;
+    float: left;
+}
+.enciclopedy_all, .enciclopedy_one {
+    /*margin-top: 45px;*/
+    display: block;
+    width: 100%;
+    position: relative;
+    /*float: left;*/
+    z-index: 5;
+}
+.href_to_encyclopedy a.see_more {
+    /*color: #6b9903!important;*/
+    margin-top: 10px;
+}
+.colom_count {
+    display: block;
+    float: left;
+  margin-right: 23px;
+  width: 150px;
+}
+.enciclopedy_one {
+    margin-bottom: 30px;
+}

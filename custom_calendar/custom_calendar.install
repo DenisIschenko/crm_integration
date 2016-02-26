@@ -1,0 +1,169 @@
+<?php
+/**
+ * @file
+ * Install file
+ */
+function custom_calendar_schema() {
+	$schema['dates_tours'] = array(
+		'fields' => array(
+			'id_dates' => array(
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'nid' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'start_dates' => array(
+				'type' => 'text',
+				'not null' => TRUE,
+			),
+			'tour_days' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+		),
+		'primary key' => array('id_dates'),
+	);
+
+	$schema['dates_tours_inacces'] = array(
+		'fields' => array(
+			'id_dates' => array(
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'nid' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'start_dates' => array(
+				'type' => 'text',
+				'not null' => TRUE,
+			),
+			'tour_days' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+		),
+		'primary key' => array('id_dates'),
+	);
+
+	$schema['dates_tours_places_left'] = array(
+		'fields' => array(
+			'id_dates' => array(
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'nid' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'start_dates' => array(
+				'type' => 'text',
+				'not null' => TRUE,
+			),
+			'tour_days' => array(
+				'type' => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+		),
+		'primary key' => array('id_dates'),
+	);
+
+	return $schema;
+}
+
+function custom_calendar_update_7101() {
+  $schema['dates_tours'] = array(
+  			'fields' => array(
+  				'id_dates' => array(
+  					'type' => 'serial',
+  					'unsigned' => TRUE,
+  					'not null' => TRUE,
+  				),
+  				'nid' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  				'start_dates' => array(
+  					'type' => 'text',
+  					'not null' => TRUE,
+  				),
+  				'tour_days' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  			),
+  			'primary key' => array('id_dates'),
+  		);
+  db_create_table('dates_tours', $schema['dates_tours']);
+}
+
+
+function custom_calendar_update_7102() {
+  $schema['dates_tours_inacces'] = array(
+  			'fields' => array(
+  				'id_dates' => array(
+  					'type' => 'serial',
+  					'unsigned' => TRUE,
+  					'not null' => TRUE,
+  				),
+  				'nid' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  				'start_dates' => array(
+  					'type' => 'text',
+  					'not null' => TRUE,
+  				),
+  				'tour_days' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  			),
+  			'primary key' => array('id_dates'),
+  		);
+  db_create_table('dates_tours_inacces', $schema['dates_tours_inacces']);
+}
+
+
+function custom_calendar_update_7103() {
+  $schema['dates_tours_places_left'] = array(
+  			'fields' => array(
+  				'id_dates' => array(
+  					'type' => 'serial',
+  					'unsigned' => TRUE,
+  					'not null' => TRUE,
+  				),
+  				'nid' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  				'start_dates' => array(
+  					'type' => 'text',
+  					'not null' => TRUE,
+  				),
+  				'tour_days' => array(
+  					'type' => 'int',
+  					'not null' => TRUE,
+  					'default' => 0,
+  				),
+  			),
+  			'primary key' => array('id_dates'),
+  		);
+  db_create_table('dates_tours_places_left', $schema['dates_tours_places_left']);
+}

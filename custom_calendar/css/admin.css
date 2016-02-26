@@ -1,0 +1,22 @@
+.calendar_container .datepick-month table{
+  margin: 0;
+  padding: 0;
+}
+.calendar_container .datepick-month{
+  margin-right: -0.02px;
+}
+.calendar_container select{
+  margin: 0;
+}
+.calendar_container{
+  margin: 0 auto;
+  width: 830px;
+}
+
+.calendar_container input.error{
+  border-color: red;
+}
+
+.calendar_container #count_days{
+  width: 230px;
+}
