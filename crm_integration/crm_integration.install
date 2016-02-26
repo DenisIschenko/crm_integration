@@ -1,0 +1,16 @@
+<?php
+/**
+ * Implements hook_uninstall().
+ */
+function crm_integration_uninstall() {
+  $variables = array(
+    'crm_cookiefilename',
+    'crm_cookiepath',
+    'crm_subdomain',
+    'crm_userlogin',
+    'crm_userhash',
+  );
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+}

@@ -1,0 +1,134 @@
+<?php
+
+function crm_integration_menu()
+{
+  return array(
+    'testcrm' => array(
+      'title' => "testcrm",
+      'description' => "",
+      'page callback' => 'testcrm',
+      'access arguments' => array('access content'),
+    ),
+    'admin/config/crm' => array(
+      'title' => 'Config CRM',
+      'access arguments' => array('administer site configuration'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('crm_integration_admin_form'),
+    )
+  );
+}
+
+function testcrm()
+{
+  include 'CrmIntegration.php';
+  $crm = new CrmIntegration();
+  $data['mail'] = 'ischenko@digitalwill.ru';
+  $data['name'] = 'test name';
+  $data['form_name'] = 'test form name';
+  $data['comment'] = 'test comment';
+  $response = $crm->crm_find_contact($data);
+  return json_encode($response);
+}
+
+function crm_integration_form_alter(&$form, &$form_state, $form_id)
+{
+  $needfull_forms = array('webform_client_form_2', 'webform_client_form_312', 'webform_client_form_11');
+
+  if (in_array($form_id, $needfull_forms)) {
+    $form['#submit'][] = 'crm_integration_form_submit';
+  }
+}
+
+function crm_integration_form_submit($form, $form_state)
+{
+  include 'CrmIntegration.php';
+  $crm = new CrmIntegration();
+
+  $data['mail'] = mb_strtolower(implode("", array($_POST['submitted']['email'], $_POST['submitted']['e_mail'])));
+  $data['name'] = implode("", array($_POST['submitted']['familiya'], $_POST['submitted']['contact'], $_POST['submitted']['name']));
+  $data['form_name'] = $form['#node']->title;
+
+  if ($data['name'] == '') {
+    $data['name'] = 'No name';
+  }
+  $comment = array();
+  foreach ($_POST as $key => $val) {
+    if (is_array($val)) {
+      foreach ($val as $k => $v) {
+        if (isset($form[$key][$k]['#title'])) {
+          $comment[$k] = $form[$key][$k]['#title'] . ": " . $v;
+        }
+      }
+    }
+    if ($form[$key]['#type'] != 'hidden' && isset($form[$key]['#title'])) {
+      $comment[$key] = $form[$key]['#title'] . ": " . $val;
+    }
+  }
+  $data['comment'] = implode("; ", $comment);
+  $crm->crm_find_contact($data);
+}
+
+function crm_integration_admin_form() {
+
+  $form = array();
+
+  $form['crm_cookiefilename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Cookie file name'),
+    '#default_value' => variable_get('crm_cookiefilename', 'cookie.txt'),
+    '#required' => TRUE,
+  );
+  $form['crm_cookiepath'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Cookie path'),
+    '#default_value' => variable_get('crm_cookiepath', 'public://crm_integration'),
+    '#required' => TRUE,
+  );
+  $form['crm_subdomain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Crm sub domain'),
+    '#default_value' => variable_get('crm_subdomain', ''),
+    '#required' => TRUE,
+  );
+  $form['crm_userlogin'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Crm user login'),
+    '#default_value' => variable_get('crm_userlogin', ''),
+    '#required' => TRUE,
+  );
+  $form['crm_userhash'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Crm user hash'),
+    '#default_value' => variable_get('crm_userhash', ''),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  return $form;
+}
+
+function crm_integration_admin_form_submit($form, &$form_state) {
+
+  variable_set('crm_cookiefilename', $form_state['values']['crm_cookiefilename']);
+  variable_set('crm_cookiepath', $form_state['values']['crm_cookiepath']);
+  variable_set('crm_subdomain', $form_state['values']['crm_subdomain']);
+  variable_set('crm_userlogin', $form_state['values']['crm_userlogin']);
+  variable_set('crm_userhash', $form_state['values']['crm_userhash']);
+  drupal_set_message(t('Your configuration has been saved.'));
+
+  watchdog(
+    'crm notify',
+    'Crm config change. crm_cookiefilename = @crm_cookiefilename; crm_cookiepath = @crm_cookiepath; crm_subdomain = @crm_subdomain; crm_userlogin = @crm_userlogin; crm_userhash = @crm_userhash',
+    array(
+      '@crm_cookiefilename' =>  variable_get('crm_cookiefilename', 'cookie.txt'),
+      '@crm_cookiepath' =>  variable_get('crm_cookiepath', 'public://crm_integration'),
+      '@crm_subdomain' =>  variable_get('crm_subdomain', ''),
+      '@crm_userlogin' =>  variable_get('crm_userlogin', ''),
+      '@crm_userhash' =>  variable_get('crm_userhash', ''),
+    )
+  );
+
+}
